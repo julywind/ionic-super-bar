@@ -2,6 +2,7 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 import { NavController, MenuController } from 'ionic-angular';
 
 import { LanguageDetailsPage } from '../language-details/language-details';
+import { HTTP } from "@ionic-native/http";
 
 @Component({
   selector: 'page-home',
@@ -11,10 +12,21 @@ export class HomePage {
 
   items = [];
   showToolbar:boolean = false;
+  categoryId:string = null;
 
   constructor(public nav: NavController,
-    public menu: MenuController, public ref: ChangeDetectorRef) {
-      this.getItems();
+              public menu: MenuController, public ref: ChangeDetectorRef, private http: HTTP) {
+    this.loadData();
+  }
+
+  setCategoryId(categoryId:string){
+    this.categoryId = categoryId;
+    if(categoryId==null){
+      this.items=[];
+      // this.ref.detectChanges();
+    }else{
+      this.loadData();
+    }
   }
 
   onScroll($event: any){
@@ -25,6 +37,17 @@ export class HomePage {
 
   openNavDetailsPage(item) {
     this.nav.push(LanguageDetailsPage, { item: item });
+  }
+
+  loadData(){
+    this.http.get("https://dynamicedu.wps.cn/API/subtitle_courses?categoryId="+this.categoryId,{},{}).then(res => {
+      console.log(res);
+      //返回结果，直接是json形式
+      this.items = JSON.parse(res.data);
+    }).catch(error => {
+      //错误信息
+      console.log(error)
+    });
   }
 
   getItems() {
